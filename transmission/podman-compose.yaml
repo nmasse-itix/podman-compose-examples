@@ -1,0 +1,59 @@
+volumes:
+  transmission-config:
+  downloads:
+  flood-config:
+  flood-runtime:
+
+services:
+  transmission:
+    image: lscr.io/linuxserver/transmission:latest
+    container_name: transmission
+    environment:
+    - PUID=1000
+    - PGID=1000
+    - TZ=Europe/Paris
+    - TRANSMISSION_WEB_HOME=/combustion-release/
+    - USER=admin
+    - PASS=secret
+    - PEERPORT=6881
+    volumes:
+    - transmission-config:/config:z
+    - downloads:/downloads:z
+    ports:
+    - 9091:9091
+    - 6881:6881
+    - 6881:6881/udp
+    expose:
+    - "9091"
+    restart: unless-stopped
+  flood:
+    image: docker.io/jesec/flood:latest
+    container_name: flood
+    environment:
+    - HOME=/home/flood
+    volumes:
+    - flood-config:/home/flood
+    - flood-runtime:/var/lib/flood
+    - downloads:/data
+    user: "1000:1000"
+    ports:
+    - 3000:3000
+    link:
+    - transmission
+    command:
+    - --port
+    - "3000"
+    - --allowedpath
+    - "/data"
+    - --auth
+    - none
+    - --trurl
+    - http://transmission:9091/transmission/rpc
+    - --truser
+    - admin
+    - --trpass
+    - secret
+    - --rundir
+    - /var/lib/flood
+    - --host 0.0.0.0
+    restart: unless-stopped

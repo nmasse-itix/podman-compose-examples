@@ -1,0 +1,19 @@
+volumes:
+  downloads:
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    user: "10017:10000"
+    volumes:
+      - config:/config:z
+      - downloads:/downloads
+    ports:
+      - 8080:8080
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+    entrypoint:
+    - /usr/bin/qbittorrent-nox
+    command:
+    - --webui-port=8080
